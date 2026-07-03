@@ -2,48 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
-import extra_streamlit_components as stx
 import streamlit as st
 
 from database import DatabaseManager
-
-
-AUTH_COOKIE_NAME = "emotilearn_user_id"
-AUTH_COOKIE_DAYS = 30
-_cookie_manager = stx.CookieManager()
-
-
-def _persist_user_cookie(user_id: int) -> None:
-    """Store signed-in user id in a long-lived browser cookie."""
-
-    _cookie_manager.set(
-        AUTH_COOKIE_NAME,
-        str(user_id),
-        expires_at=datetime.now(timezone.utc) + timedelta(days=AUTH_COOKIE_DAYS),
-    )
-
-
-def clear_auth_cookie() -> None:
-    """Remove the persisted login cookie from the browser."""
-
-    _cookie_manager.delete(AUTH_COOKIE_NAME)
-
 
 def initialize_auth_state(database: DatabaseManager) -> None:
     """Initialize authentication state."""
 
     st.session_state.setdefault("user", None)
 
-    if st.session_state["user"] is None:
-        cookie_user_id = _cookie_manager.get(AUTH_COOKIE_NAME)
-        if cookie_user_id and str(cookie_user_id).isdigit():
-            user = database.get_user(int(cookie_user_id))
-            if user:
-                st.session_state["user"] = user
-            else:
-                clear_auth_cookie()
+    # Session-only auth prevents one user's login from carrying over to another person.
+    _ = database
 
 
 def render_auth_panel(database: DatabaseManager) -> None:
@@ -61,7 +30,6 @@ def render_auth_panel(database: DatabaseManager) -> None:
                 st.error("That email and password combination was not recognized.")
             else:
                 st.session_state.user = user
-                _persist_user_cookie(user.user_id)
                 st.success(f"Welcome back, {user.name}!")
                 st.rerun()
 
@@ -87,7 +55,6 @@ def render_auth_panel(database: DatabaseManager) -> None:
                     st.error(str(error))
                 else:
                     st.session_state.user = user
-                    _persist_user_cookie(user.user_id)
                     st.success("Your account is ready.")
                     st.rerun()
 

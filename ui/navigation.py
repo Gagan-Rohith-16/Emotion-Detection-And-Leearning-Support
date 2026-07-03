@@ -49,9 +49,6 @@ def render_navigation() -> str:
             )
 
             if st.button("Sign out", use_container_width=True):
-                from ui.auth import clear_auth_cookie
-
-                clear_auth_cookie()
                 st.session_state.user = None
                 st.rerun()
 
