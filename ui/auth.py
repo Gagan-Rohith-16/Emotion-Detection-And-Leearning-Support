@@ -2,35 +2,58 @@
 
 from __future__ import annotations
 
+import os
+from datetime import datetime, timedelta, timezone
+
+import extra_streamlit_components as stx
 import streamlit as st
 
 from database import DatabaseManager
 
-
+AUTH_COOKIE_NAME = "emotilearn_auth_token"
+AUTH_COOKIE_DAYS = 30
 AUTH_QUERY_PARAM = "auth"
+_cookie_manager = stx.CookieManager()
+
+
+def _persist_auth_cookie(token: str) -> None:
+    """Store the private auth token in a browser cookie."""
+
+    is_secure = os.getenv("RENDER", "").lower() in {"1", "true", "yes"}
+    _cookie_manager.set(
+        AUTH_COOKIE_NAME,
+        token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=AUTH_COOKIE_DAYS),
+        same_site="strict",
+        secure=is_secure,
+    )
 
 
 def _get_auth_token() -> str:
-    """Read the private auth token from the current URL."""
+    """Read the private auth token from the browser cookie or legacy URL token."""
 
-    value = st.query_params.get(AUTH_QUERY_PARAM, "")
-    if isinstance(value, list):
-        value = value[0] if value else ""
-    return str(value).strip()
+    cookie_token = str(_cookie_manager.get(AUTH_COOKIE_NAME) or "").strip()
+    if cookie_token:
+        return cookie_token
 
-
-def _set_auth_token(token: str) -> None:
-    """Persist the private auth token in the URL so refresh keeps the session."""
-
-    st.query_params[AUTH_QUERY_PARAM] = token
+    legacy_value = st.query_params.get(AUTH_QUERY_PARAM, "")
+    if isinstance(legacy_value, list):
+        legacy_value = legacy_value[0] if legacy_value else ""
+    legacy_token = str(legacy_value).strip()
+    if legacy_token:
+        _persist_auth_cookie(legacy_token)
+        del st.query_params[AUTH_QUERY_PARAM]
+    return legacy_token
 
 
 def clear_auth_token(database: DatabaseManager | None = None) -> None:
-    """Remove the private auth token from the URL and optionally revoke it server-side."""
+    """Remove the private auth token from the browser and revoke it server-side."""
 
     token = _get_auth_token()
     if database is not None and token:
         database.revoke_auth_token(token)
+    if token:
+        _cookie_manager.delete(AUTH_COOKIE_NAME)
     if AUTH_QUERY_PARAM in st.query_params:
         del st.query_params[AUTH_QUERY_PARAM]
 
@@ -64,7 +87,7 @@ def render_auth_panel(database: DatabaseManager) -> None:
                 st.error("That email and password combination was not recognized.")
             else:
                 st.session_state.user = user
-                _set_auth_token(database.issue_auth_token(user.user_id))
+                _persist_auth_cookie(database.issue_auth_token(user.user_id))
                 st.success(f"Welcome back, {user.name}!")
                 st.rerun()
 
@@ -90,7 +113,7 @@ def render_auth_panel(database: DatabaseManager) -> None:
                     st.error(str(error))
                 else:
                     st.session_state.user = user
-                    _set_auth_token(database.issue_auth_token(user.user_id))
+                    _persist_auth_cookie(database.issue_auth_token(user.user_id))
                     st.success("Your account is ready.")
                     st.rerun()
 
