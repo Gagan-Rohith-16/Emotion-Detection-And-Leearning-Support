@@ -1,0 +1,22 @@
+{
+  "format_version": 1,
+  "model_type": "BERT",
+  "labels": [
+    "Bored",
+    "Confident",
+    "Confused",
+    "Curious",
+    "Frustrated"
+  ],
+  "config": {
+    "base_model_name": "bert-base-uncased",
+    "max_length": 128,
+    "batch_size": 32,
+    "epochs": 3,
+    "learning_rate": 2e-5,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.0,
+    "validation_split": 0.2,
+    "random_seed": 42
+  }
+}

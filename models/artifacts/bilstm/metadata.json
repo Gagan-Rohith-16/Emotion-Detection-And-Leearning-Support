@@ -1,0 +1,24 @@
+{
+  "config": {
+    "batch_size": 32,
+    "dense_units": 64,
+    "dropout_rate": 0.35,
+    "embedding_dimension": 128,
+    "epochs": 20,
+    "learning_rate": 0.001,
+    "lstm_units": 64,
+    "random_seed": 42,
+    "sequence_length": 120,
+    "validation_split": 0.2,
+    "vocabulary_size": 20000
+  },
+  "format_version": 1,
+  "labels": [
+    "Bored",
+    "Confident",
+    "Confused",
+    "Curious",
+    "Frustrated"
+  ],
+  "model_type": "BiLSTM"
+}
