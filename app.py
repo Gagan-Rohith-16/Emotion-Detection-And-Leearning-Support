@@ -29,8 +29,9 @@ def main() -> None:
     )
     initialize_auth_state(get_database())
     apply_theme(dark_mode=False)
-    selected_page = render_navigation()
-    render_page(selected_page, get_database())
+    database = get_database()
+    selected_page = render_navigation(database)
+    render_page(selected_page, database)
 
 
 if __name__ == "__main__":

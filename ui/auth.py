@@ -6,13 +6,47 @@ import streamlit as st
 
 from database import DatabaseManager
 
+
+AUTH_QUERY_PARAM = "auth"
+
+
+def _get_auth_token() -> str:
+    """Read the private auth token from the current URL."""
+
+    value = st.query_params.get(AUTH_QUERY_PARAM, "")
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value).strip()
+
+
+def _set_auth_token(token: str) -> None:
+    """Persist the private auth token in the URL so refresh keeps the session."""
+
+    st.query_params[AUTH_QUERY_PARAM] = token
+
+
+def clear_auth_token(database: DatabaseManager | None = None) -> None:
+    """Remove the private auth token from the URL and optionally revoke it server-side."""
+
+    token = _get_auth_token()
+    if database is not None and token:
+        database.revoke_auth_token(token)
+    if AUTH_QUERY_PARAM in st.query_params:
+        del st.query_params[AUTH_QUERY_PARAM]
+
 def initialize_auth_state(database: DatabaseManager) -> None:
     """Initialize authentication state."""
 
     st.session_state.setdefault("user", None)
 
-    # Session-only auth prevents one user's login from carrying over to another person.
-    _ = database
+    if st.session_state["user"] is None:
+        token = _get_auth_token()
+        if token:
+            user = database.get_user_by_auth_token(token)
+            if user:
+                st.session_state["user"] = user
+            else:
+                clear_auth_token()
 
 
 def render_auth_panel(database: DatabaseManager) -> None:
@@ -30,6 +64,7 @@ def render_auth_panel(database: DatabaseManager) -> None:
                 st.error("That email and password combination was not recognized.")
             else:
                 st.session_state.user = user
+                _set_auth_token(database.issue_auth_token(user.user_id))
                 st.success(f"Welcome back, {user.name}!")
                 st.rerun()
 
@@ -55,6 +90,7 @@ def render_auth_panel(database: DatabaseManager) -> None:
                     st.error(str(error))
                 else:
                     st.session_state.user = user
+                    _set_auth_token(database.issue_auth_token(user.user_id))
                     st.success("Your account is ready.")
                     st.rerun()
 

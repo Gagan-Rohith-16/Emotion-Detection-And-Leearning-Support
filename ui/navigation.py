@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import streamlit as st
 
+from database import DatabaseManager
+
 from .components import render_brand
 
 
@@ -18,7 +20,7 @@ PAGES: tuple[tuple[str, str], ...] = (
 )
 
 
-def render_navigation() -> str:
+def render_navigation(database: DatabaseManager) -> str:
     """Render responsive sidebar navigation and return the selected page."""
 
     with st.sidebar:
@@ -49,6 +51,9 @@ def render_navigation() -> str:
             )
 
             if st.button("Sign out", use_container_width=True):
+                from ui.auth import clear_auth_token
+
+                clear_auth_token(database)
                 st.session_state.user = None
                 st.rerun()
 

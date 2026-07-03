@@ -129,6 +129,59 @@ class DatabaseManager:
             return None
         return self._row_to_user(row)
 
+    @staticmethod
+    def _hash_auth_token(token: str) -> str:
+        """Return a stable hash for browser-persisted auth tokens."""
+
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def issue_auth_token(self, user_id: int) -> str:
+        """Create a browser-safe token that can restore the current login after refresh."""
+
+        token = secrets.token_urlsafe(32)
+        token_hash = self._hash_auth_token(token)
+        with self.connection() as connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO auth_tokens (token_hash, user_id) VALUES (?, ?)",
+                (token_hash, user_id),
+            )
+        return token
+
+    def get_user_by_auth_token(self, token: str) -> User | None:
+        """Resolve a browser token to a user without exposing account data."""
+
+        token_hash = self._hash_auth_token(token.strip())
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT user_id
+                FROM auth_tokens
+                WHERE token_hash = ?
+                """,
+                (token_hash,),
+            ).fetchone()
+            if row is None:
+                return None
+            connection.execute(
+                """
+                UPDATE auth_tokens
+                SET last_used_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                WHERE token_hash = ?
+                """,
+                (token_hash,),
+            )
+        return self.get_user(int(row["user_id"]))
+
+    def revoke_auth_token(self, token: str) -> None:
+        """Delete a browser token during sign-out or invalid-session cleanup."""
+
+        token_hash = self._hash_auth_token(token.strip())
+        with self.connection() as connection:
+            connection.execute(
+                "DELETE FROM auth_tokens WHERE token_hash = ?",
+                (token_hash,),
+            )
+
     def get_user(self, user_id: int) -> User | None:
         """Find a user by primary key without returning password material."""
 
