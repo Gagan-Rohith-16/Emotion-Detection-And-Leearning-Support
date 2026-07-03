@@ -48,11 +48,7 @@ def render_navigation() -> str:
                 unsafe_allow_html=True,
             )
 
-            from ui.auth import cookies
-
             if st.button("Sign out", use_container_width=True):
-                cookies["user_id"] = ""
-                cookies.save()
                 st.session_state.user = None
                 st.rerun()
 

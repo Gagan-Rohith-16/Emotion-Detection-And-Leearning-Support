@@ -5,30 +5,17 @@ from __future__ import annotations
 import streamlit as st
 
 from database import DatabaseManager
-from streamlit_cookies_manager import EncryptedCookieManager
 
-cookies = EncryptedCookieManager(
-    prefix="emotilearn/",
-    password="emotilearn-secret-key",
-)
 
-if not cookies.ready():
-    st.stop()
 def initialize_auth_state(database: DatabaseManager) -> None:
     """Initialize authentication state."""
 
     st.session_state.setdefault("user", None)
 
-    if st.session_state["user"] is None:
+    # Session-backed auth avoids deprecated caching in third-party cookie helpers.
+    _ = database
 
-        user_id = cookies.get("user_id")
 
-        if user_id:
-
-            user = database.get_user(int(user_id))
-
-            if user:
-                st.session_state["user"] = user
 def render_auth_panel(database: DatabaseManager) -> None:
     """Render accessible sign-in and registration tabs."""
 
@@ -44,8 +31,6 @@ def render_auth_panel(database: DatabaseManager) -> None:
                 st.error("That email and password combination was not recognized.")
             else:
                 st.session_state.user = user
-                cookies["user_id"] = str(user.user_id)
-                cookies.save()
                 st.success(f"Welcome back, {user.name}!")
                 st.rerun()
 
@@ -71,8 +56,6 @@ def render_auth_panel(database: DatabaseManager) -> None:
                     st.error(str(error))
                 else:
                     st.session_state.user = user
-                    cookies["user_id"] = str(user.user_id)
-                    cookies.save()
                     st.success("Your account is ready.")
                     st.rerun()
 
