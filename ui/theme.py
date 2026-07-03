@@ -73,6 +73,10 @@ def apply_theme(dark_mode: bool = False) -> None:
                 radial-gradient(circle at 92% 12%, rgba(25,198,209,.12), transparent 24rem),
                 var(--app-bg);
         }}
+        #MainMenu {{ visibility: hidden; }}
+        [data-testid="stToolbar"] {{ display: none !important; }}
+        [data-testid="stDecoration"] {{ display: none !important; }}
+        [data-testid="stAppViewContainer"] {{ color-scheme: light; }}
         [data-testid="stHeader"] {{ background: transparent; }}
         [data-testid="stSidebar"] {{
             background: var(--surface-strong);

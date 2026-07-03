@@ -28,7 +28,7 @@ def main() -> None:
         initial_sidebar_state="expanded",
     )
     initialize_auth_state(get_database())
-    apply_theme(dark_mode=st.session_state.get("dark_mode", False))
+    apply_theme(dark_mode=False)
     selected_page = render_navigation()
     render_page(selected_page, get_database())
 
