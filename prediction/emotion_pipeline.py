@@ -12,12 +12,20 @@ class EmotionPredictionPipeline:
         self.bert = BERTEmotionClassifier()
         self.rules = KeywordRuleEngine()
         self.fusion = EmotionFusionEngine()
+        self.bert_available = self.bert.is_ready()
 
     def predict(self, text: str):
 
         bilstm_result = self.bilstm.predict(text)
 
-        bert_result = self.bert.predict(text)
+        bert_result = None
+
+        if self.bert_available:
+            try:
+                bert_result = self.bert.predict(text)
+            except Exception:
+                # Keep the app functional in deployments where BERT weights are absent.
+                bert_result = None
 
         rule_result = self.rules.analyze(text)
 

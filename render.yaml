@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: emotion-detection-learning-support
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false

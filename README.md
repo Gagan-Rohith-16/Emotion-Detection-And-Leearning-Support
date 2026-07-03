@@ -111,6 +111,32 @@ streamlit run app.py
 
 The app initializes the SQLite database automatically using `database/schema.sql`.
 
+## Deploy on Render
+
+This repository is now configured for Docker-based deployment on Render.
+
+Deployment files:
+
+- `Dockerfile`
+- `render.yaml`
+- `.streamlit/config.toml`
+- `.dockerignore`
+
+### Steps
+
+1. Push your latest code to GitHub.
+2. In Render, create a new **Blueprint** and select this repository.
+3. Render reads `render.yaml` and creates the web service automatically.
+4. Set `GEMINI_API_KEY` in Render Environment Variables (optional).
+5. Deploy.
+
+### Notes for production
+
+- The app listens on Render's injected `PORT` automatically.
+- If `GEMINI_API_KEY` is missing, guidance falls back to deterministic offline responses.
+- If BERT artifacts are not available in deployment, the prediction pipeline still works using BiLSTM + Keyword Rules + Fusion.
+- For persistent user history, attach a Render Disk and store `database/emotion_support.db` on that mounted path.
+
 ## Model and Data Notes
 
 - `venv/` is excluded from version control.
