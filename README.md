@@ -2,6 +2,8 @@
 
 Emotion Detection and Learning Support is a Streamlit-based AI platform that helps students describe learning difficulties, detects likely emotions, and provides personalized study guidance.
 
+Live MVP: https://emotion-detection-and-leearning-support.onrender.com
+
 The app combines:
 - BiLSTM classifier
 - BERT classifier

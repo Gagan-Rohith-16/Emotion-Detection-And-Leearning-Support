@@ -522,6 +522,7 @@ def render_about() -> None:
     """Render project context, workflow, and responsible-AI positioning."""
 
     render_page_header("About", "Technology with a little more empathy", "A Google Cloud Generative AI SmartBridge Internship project designed to support—not judge—students.")
+    st.markdown("**Live MVP:** https://emotion-detection-and-leearning-support.onrender.com")
     columns = st.columns(3)
     cards = (
         ("🔬", "Evidence-informed", "Multiple models contribute signals instead of relying on one brittle guess."),
