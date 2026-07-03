@@ -15,7 +15,7 @@ The app combines:
 
 ## Features
 
-- User authentication with persistent session cookies
+- User authentication with private browser-cookie persistence
 - Emotion prediction from free-text learning challenges
 - Multi-model fusion output with confidence and agreement score
 - Personalized guidance from Gemini (`gemini-2.5-flash`) with robust fallback mode
