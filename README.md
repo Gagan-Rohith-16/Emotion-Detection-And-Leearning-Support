@@ -1,5 +1,7 @@
 # Emotion Detection and Learning Support
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-2ea44f?style=for-the-badge)](https://emotion-detection-and-leearning-support.onrender.com)
+
 Emotion Detection and Learning Support is a Streamlit-based AI platform that helps students describe learning difficulties, detects likely emotions, and provides personalized study guidance.
 
 Live MVP: https://emotion-detection-and-leearning-support.onrender.com
