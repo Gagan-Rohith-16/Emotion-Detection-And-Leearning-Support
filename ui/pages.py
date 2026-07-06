@@ -435,7 +435,7 @@ def render_history(database: DatabaseManager) -> None:
             ):
                 database.delete_emotion_record(
                     record.record_id,
-                    st.session_state.user.user_id,
+                    user.user_id,
                 )
                 st.success("Prediction deleted successfully.")
                 st.rerun()
@@ -454,7 +454,12 @@ def render_settings(database: DatabaseManager) -> None:
     )
     st.subheader("👤 Account Profile")
 
-    user = st.session_state.user
+    user = st.session_state.get("user")
+
+    if user is None:
+        st.warning("Please login first to manage your account profile.")
+        render_auth_panel(database)
+        return
 
     new_name = st.text_input(
         "Full Name",
@@ -469,10 +474,14 @@ def render_settings(database: DatabaseManager) -> None:
 
     if st.button("💾 Save Profile", use_container_width=True):
 
-        database.update_profile(
-            user.user_id,
-            new_name,
-        )
+        try:
+            database.update_profile(
+                user.user_id,
+                new_name,
+            )
+        except ValueError as error:
+            st.error(str(error))
+            return
 
         st.success("✅ Profile updated successfully!")
 
@@ -570,4 +579,3 @@ def render_page(page: str, database: DatabaseManager) -> None:
         render_settings(database)
     else:
         st.error("This page is not available.")
-

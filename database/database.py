@@ -346,6 +346,10 @@ class DatabaseManager:
     ) -> None:
         """Update user's profile."""
 
+        clean_name = name.strip()
+        if not 2 <= len(clean_name) <= 100:
+            raise ValueError("Name must contain between 2 and 100 characters.")
+
         with self.connection() as connection:
             connection.execute(
                 """
@@ -354,7 +358,7 @@ class DatabaseManager:
                 WHERE user_id = ?
                 """,
                 (
-                    name.strip(),
+                    clean_name,
                     user_id,
                 ),
             )
