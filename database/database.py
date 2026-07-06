@@ -242,16 +242,7 @@ class DatabaseManager:
                 ),
             )
             row = connection.execute(
-                """
-                SELECT
-                    user_id,
-                    name,
-                    email,
-                    role,
-                    created_at
-                FROM users
-                WHERE user_id = ?
-                """,
+                "SELECT * FROM emotion_records WHERE record_id = ?",
                 (cursor.lastrowid,),
             ).fetchone()
         return self._row_to_record(row)
